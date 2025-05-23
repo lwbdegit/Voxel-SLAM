@@ -1,16 +1,38 @@
 General:
   lid_topic: "/rs_lidar/points"
   imu_topic: "/rs_imu"
-  save_path: "/home/sti/voxel_slam_result/"
+  save_path: "/home/voxel_slam_result/"
   previous_map: ""
   bagname: "zuopaotai"
   lidar_type: 4
   blind: 0.5
   point_filter_num: 1
-  extrinsic_tran: [0.0, 0.0, 0.0] # urbannav 
+
+  # AC1
+  extrinsic_tran: [0.0106, 0.0099, -0.0155] 
   extrinsic_rota: [1, 0, 0, 
                    0, 1, 0, 
                    0, 0, 1]
+  
+  # Meta
+  # extrinsic_tran: [ -0.030219, 0.02354, 0.0 ]
+  # extrinsic_rota: [ 0.00385925, -0.99998828, -0.00292233,
+  #                 0.00085436,  0.00292565, -0.99999536,
+  #                 0.99999219,  0.00385673,  0.00086564]   
+
+  # Airy
+  # extrinsic_tran: [ 0.00418, 0.00425, -0.00446 ]
+  # extrinsic_rota: [ 0., -1., 0.,
+  #                -1., 0., 0.,
+  #                0., 0., -1. ]
+
+  # E1
+  # extrinsic_tran: [ 0.0042744, -0.01575, -0.011212]
+  # extrinsic_rota: [ -0.0, -1, -0.0,
+  #                   0,  0.0,  1,
+  #                   -1,  0.0, -0 ]
+
+
   is_save_map: 0
 
 Odometry:
