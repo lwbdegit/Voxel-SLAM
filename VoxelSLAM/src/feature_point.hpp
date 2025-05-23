@@ -9,7 +9,7 @@
 typedef pcl::PointXYZINormal PointType;
 using namespace std;
 
-enum LID_TYPE{LIVOX, VELODYNE, OUSTER, HESAI, ROBOSENSE, TARTANAIR};
+enum LID_TYPE{LIVOX, VELODYNE, OUSTER, HESAI, ROBOSENSE, TARTANAIR, LIVOX_POINTCLOUD2};
 
 namespace velodyne_ros {
   struct EIGEN_ALIGN16 Point {
@@ -93,6 +93,28 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(rslidar_ros::Point,
     (double, timestamp, timestamp)
 )
 
+
+// mid360
+namespace mid360_ros {
+  struct EIGEN_ALIGN16 Point {
+      PCL_ADD_POINT4D;
+      float intensity;
+      uint8_t tag;
+      uint8_t line;
+      double timestamp;
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  };
+}  // namespace mid360_ros
+POINT_CLOUD_REGISTER_POINT_STRUCT(mid360_ros::Point,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (uint8_t, tag, tag)
+    (uint8_t, line, line)
+    (double, timestamp, timestamp)
+)
+
 class Features
 {
 public:
@@ -129,6 +151,10 @@ public:
     
     case TARTANAIR:
       tartanair_handler(msg, pl_full);
+      break;
+
+    case LIVOX_POINTCLOUD2:
+      mid360_pointcloud2_handler(msg, pl_full);
       break;
 
     default:
@@ -365,6 +391,37 @@ public:
     return;
   }
 
+  void mid360_pointcloud2_handler(const sensor_msgs::PointCloud2::ConstPtr &msg,
+                      pcl::PointCloud<PointType> &pl_surf) {
+    pcl::PointCloud<mid360_ros::Point> pl_orig;
+    pcl::fromROSMsg(*msg, pl_orig);
+
+    pl_surf.clear();
+    int plsize = pl_orig.points.size();
+    pl_surf.reserve(plsize);
+
+    double time_head = pl_orig.points[0].timestamp;
+    for (int i = 0; i < plsize; i++) {
+      PointType added_pt;
+      added_pt.normal_x = 0;
+      added_pt.normal_y = 0;
+      added_pt.normal_z = 0;
+      added_pt.x = pl_orig.points[i].x;
+      added_pt.y = pl_orig.points[i].y;
+      added_pt.z = pl_orig.points[i].z;
+      added_pt.intensity = pl_orig.points[i].intensity;
+      added_pt.curvature = (pl_orig.points[i].timestamp - time_head) *
+                           1e-9; // curvature unit: s
+
+      if (i % point_filter_num == 0) {
+        if (added_pt.x * added_pt.x + added_pt.y * added_pt.y +
+                added_pt.z * added_pt.z >
+            blind * blind) {
+          pl_surf.points.push_back(added_pt);
+        }
+      }
+    }
+  }
 };
 
 #endif
